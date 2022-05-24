@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="JDBC-Provision-Rule" type="JDBCProvision">
+  <Description>This rule is used by the JDBC connector to do provisioning of the data .</Description>
+  <Signature returnType="ProvisioningResult">
+    <Inputs>
+      <Argument name="log">
+        <Description>
+          The log object associated with the SailPointContext.
+        </Description>
+      </Argument>
+      <Argument name="context">
+        <Description>
+          A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+        </Description>
+      </Argument>
+      <Argument name="application">
+        <Description>
+                The application whose data file is being processed.
+                </Description>
+      </Argument>
+      <Argument name="schema">
+        <Description>
+                The Schema currently in use.
+                </Description>
+      </Argument>
+      <Argument name="connection">
+        <Description>
+                A connection object to connect to database.
+                </Description>
+      </Argument>
+      <Argument name="plan">
+        <Description>
+                The ProvisioningPlan created against the JDBC application.
+                </Description>
+      </Argument>
+    </Inputs>
+    <Returns>
+      <Argument name="result">
+        <Description>
+                A Provisioning Result object is desirable to return the status.IT can be a new object or part of  Provisioning Plan
+                </Description>
+      </Argument>
+    </Returns>
+  </Signature>
+  <Source><![CDATA[import java.util.Date;
+			import sailpoint.object.Identity;
+			import java.util.Vector;
+			import java.sql.Connection;
+			import java.sql.DriverManager;
+			import java.sql.PreparedStatement;
+			import java.sql.Statement;
+			import java.sql.SQLException;
+			import java.sql.ResultSet;
+			import java.sql.Types;
+			import java.util.List;
+			import sailpoint.api.SailPointContext;
+			import sailpoint.connector.JDBCConnector; 
+			import sailpoint.object.Application;
+			import sailpoint.object.ProvisioningPlan;
+			import sailpoint.object.ProvisioningPlan.AccountRequest;
+			import sailpoint.object.ProvisioningPlan.AttributeRequest;
+			import sailpoint.object.ProvisioningPlan.PermissionRequest;
+			import sailpoint.object.ProvisioningResult;
+			import sailpoint.object.Schema;
+			import sailpoint.tools.xml.XMLObjectFactory;
+			import sailpoint.tools.Util;
+
+			//the below all are logging related classes.
+
+			import org.apache.commons.logging.LogFactory;
+			import org.apache.commons.logging.Log;
+			import org.apache.log4j.Logger;
+
+			// creating static log object
+			// text inside the braces is of any text which will match in the log4j.proeprties file.
+
+			private static Log log_new=LogFactory.getLog("globalprovisioningrule");
+
+			// the below line for to print text messages in trace log file
+			// we have mensioned trace because we have declared level in log4j.properties file as "trace".
+
+			log_new.trace("This is a trace message in side rule");
+
+			//function for getting the accout attribute value.
+
+			//AccountRequest for getting for which identity account we have to get the attribute value we have suppied
+
+			public Object getAttributeRequestValue(AccountRequest AcctReq,String attribute)
+			{
+			if (AcctReq != null)
+			{
+			AttributeRequest AttrReq=AcctReq.getAttributeRequest(attribute);
+			log_new.trace("inside acctreq method");
+
+			if(AttrReq != null)
+			{
+			log_new.trace("inside attrreq method");
+
+			return AttrReq.getValue();
+			}
+			}
+			return null;
+			}
+
+
+			Date now = new Date();
+			log_new.trace(" Current Time =  " + now.toString()); 
+
+			//print the plan object contents. the toXml mensioned here is when you call plan directly it will print object code because it is an object. if you mension toXml means it will get the details of the plan object content
+
+			log_new.trace(" plan  =  " + plan.toXml());
+
+			ProvisioningResult result = new ProvisioningResult();
+
+			//we have not created any object for ProvisioningPlan because "plan" is an object which is the default input value for this rule if you look at application->rules->edit defined rule->see at the right for "input" objects
+
+			if (plan != null)
+			{
+			List accounts = plan.getAccountRequests();
+			log_new.trace("accts :"); 
+
+			if ((accounts != null) && (accounts.size() > 0))
+			{
+			log_new.trace("sizes :"); 
+
+			for(AccountRequest account:accounts)
+			{
+			log_new.trace("acct :" +account.toXml()); 
+			try
+			{
+			if(AccountRequest.Operation.Create.equals(account.getOperation()))
+			{
+			log_new.trace("Account Request Operation = Create");
+
+			List cre_attr_requests = account.getAttributeRequests();
+
+			log_new.trace("Account Request "+cre_attr_requests);
+
+			if(cre_attr_requests != null)
+			{
+			for(AttributeRequest attrReq : cre_attr_requests)
+			{
+			log_new.trace("AttributeRequest inside  ");
+
+			String id=(String)plan.getNativeIdentity();
+
+			log_new.trace("identity value:" + id);
+
+			if(id != null)
+			{
+			Identity conid=context.getObjectByName(Identity.class,id);
+
+			String name=(String)conid.getName();
+			String manager=(String)conid.getManager().getName();
+			String email=(String)conid.getEmail();
+
+
+System.out.println("name    "+name);
+				System.out.println("manager    "+manager);
+								System.out.println("manager    "+manager);
+			String roledata=getAttributeRequestValue(account,"role");   
+        
+        	System.out.println("roledata    "+roledata);
+
+			log_new.trace("Preparing  : " + id +":: name  :"+name+":: address :"+address);
+
+ 			PreparedStatement statement = connection.prepareStatement("insert into data(id,name,role,Manager,emailID) values(?,?,?,?,?)");
+			statement.setString(1,id);
+			statement.setString(2, name);
+			statement.setString(3,roledata);
+			statement.setString(4,manager);
+			statement.setString(5,email);
+
+
+
+			statement.executeUpdate();
+
+			}
+			}
+			}
+			result.setStatus(ProvisioningResult.STATUS_COMMITTED);
+			}
+			}
+			catch(SQLException e)
+			{
+			result.setStatus(ProvisioningResult.STATUS_FAILED);
+			result.addError(e);
+			}
+			} // AccountRequest loop
+			} // if AccountRequests loop
+			} // if plan not null loop
+
+			return result;]]></Source>
+</Rule>
