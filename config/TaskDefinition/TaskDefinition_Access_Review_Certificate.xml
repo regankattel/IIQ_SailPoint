@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition formPath="/analyze/reports/certificationReportArgs.xhtml" name="Access Review Certificate" resultAction="Rename" subType="Access Review and Certification Reports" type="Report">
+  <Attributes>
+    <Map>
+      <entry key="TaskDefinition.runLengthAverage" value="16"/>
+      <entry key="TaskDefinition.runLengthTotal" value="16"/>
+      <entry key="TaskDefinition.runs" value="1"/>
+      <entry key="TaskSchedule.host"/>
+      <entry key="creationDateStart" value="1/5/2022 0:0:0 AM CST"/>
+      <entry key="handlerPageSize" value="25"/>
+      <entry key="jasperTemplate" value="CertificationDetailReport"/>
+      <entry key="locale" value="en_US"/>
+      <entry key="timezone" value="America/Chicago"/>
+    </Map>
+  </Attributes>
+  <Description>Displays information on current certifications in the systems and the decisions made by system users in detailed format.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="Access Review Decision Report"/>
+  </Parent>
+</TaskDefinition>

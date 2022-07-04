@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="1494507246633" id="8adfccd15bd903ed015bf792d4296acb" language="beanshell" modified="1643216526225" name="AD Identity Attr Rule-Display Name" type="IdentityAttribute">
+<Description>Identity attribute rules are used when the value is not simply a copy of an application account attribute value. A transformation may be necessary on the account attribute, or several account attributes may need to be combined to produce the identity attribute.
+
+This rule can be called in two ways: as a global mapping rule and an application mapping rule. A global mapping rule is called whenever the identity is refreshed. The rule can look at any account attributes. An application mapping rule is called only when the identity contains an account link for that application, this link is passed in the "link" argument which is not passed in global mapping rules.</Description>
+<Signature returnType="String">
+<Inputs>
+<Argument name="log">
+<Description>
+The log object associated with the SailPointContext.
+</Description>
+</Argument>
+<Argument name="context">
+<Description>
+A sailpoint.api.SailPointContext object that can be used to query the database if necessary.
+</Description>
+</Argument>
+<Argument name="environment" type="Map">
+<Description>
+Arguments passed to the aggregation or refresh task.
+</Description>
+</Argument>
+<Argument name="identity">
+<Description>
+The Identity object that represents the user
+that is being aggregated.
+</Description>
+</Argument>
+<Argument name="attributeDefinition">
+<Description>
+The AttributeDefinition object for this attribute.
+</Description>
+</Argument>
+<Argument name="link">
+<Description>
+The Link object from the Identity, if this is an application
+mapping rule. For global mapping rules this will be void.
+</Description>
+</Argument>
+<Argument name="attributeSource">
+<Description>
+The AttributeSource object.
+</Description>
+</Argument>
+<Argument name="oldValue">
+<Description>
+The original value of the application account attribute.
+</Description>
+</Argument>
+</Inputs>
+<Returns>
+<Argument name="attributeValue">
+<Description>
+The value of the attribute that should be populated.
+The rule should return this value.
+</Description>
+</Argument>
+</Returns>
+</Signature>
+<Source>import sailpoint.object.Application;
+import sailpoint.object.Attributes;
+import sailpoint.object.AttributeDefinition;
+import sailpoint.object.ObjectAttribute;
+import sailpoint.object.AttributeSource;
+
+import sailpoint.api.IdentityService;
+import sailpoint.object.Link;
+import sailpoint.object.*;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+
+// ======================================================
+// Initialize Logging
+// ======================================================
+Logger log = Logger.getLogger("cfpb.idms.CFPB_AD_IdentityAttribute-DisplayName");
+log.setLevel(Level.DEBUG);
+log.debug("::Start - CFPB.IdentityAttribute-DisplayName");
+
+// ======================================================
+// Helper Method
+// ======================================================
+// Builds the Display Name based on the correct link
+
+private static String processLink(Link linkToProcess) {
+String firstname = "";
+String lastname = "";
+String personType = " ";
+String bureau = "";
+String pronouns = "";
+String finalDisplayName = "";
+if (linkToProcess.getAttribute("extensionAttribute3") != null) {
+lastname = linkToProcess.getAttribute("extensionAttribute3");
+} else {
+if (linkToProcess.getAttribute("sn") != null){
+lastname = linkToProcess.getAttribute("sn");
+}
+}
+if (linkToProcess.getAttribute("extensionAttribute2") != null) {
+firstname = linkToProcess.getAttribute("extensionAttribute2");
+} else {
+if (linkToProcess.getAttribute("givenName") != null){
+firstname = linkToProcess.getAttribute("givenName");
+}
+}
+if (!"Employee".equals(linkToProcess.getAttribute("employeeType"))){
+personType = " (" + linkToProcess.getAttribute("employeeType") + ")";
+}
+if (linkToProcess.getAttribute("company") != null) {
+bureau = "(" + linkToProcess.getAttribute("company") + ")";
+}
+if (linkToProcess.getAttribute("extensionAttribute7") != null) {
+pronouns = "(" + linkToProcess.getAttribute("extensionAttribute7") +")";
+}
+finalDisplayName = lastname + ", " + firstname + personType + bureau + pronouns;
+finalDisplayName = finalDisplayName.replace("’","'");
+finalDisplayName =finalDisplayName.replace("()","");
+finalDisplayName = finalDisplayName.replace(" "," ");
+finalDisplayName = finalDisplayName.replace("(null)","");
+finalDisplayName = finalDisplayName.trim();
+
+// return finalDisplayName;
+//finalDisplayName.trim();
+return finalDisplayName;
+}
+
+// ======================================================
+// Constants
+// ======================================================
+
+String DISTINGUISHEDNAME = "distinguishedName";
+
+String ADMIN_OU = "OU=CFPB Admin Accounts,OU=ICAM,OU=CFPB Domain Users,DC=cfpb,DC=test";
+String DISABLED_OU = "OU=CFPB Disabled Accounts,OU=ICAM,OU=CFPB Domain Users,DC=cfpb,DC=test";
+String ENABLED_OU = "OU=CFPB Domain Users,OU=ICAM,OU=CFPB Domain Users,DC=cfpb,DC=test";
+
+String APP_NAME = "CFPB AD";
+
+// ======================================================
+// Main Body
+// ======================================================
+
+// Print general information
+
+log.debug("::attributeSource: " + attributeSource.getName());
+
+log.debug("::Identity Attribute Name: " + attributeDefinition.getName());
+
+log.debug("::app name: " + link.getApplicationName());
+
+// Default to the original value
+
+String returnValue = null;
+
+// If this is not for Active Directory than return the original value
+// and log a warning
+
+String myAppName = link.getApplicationName();
+
+if (!myAppName.equalsIgnoreCase(APP_NAME)) {
+log.warn("::***This rule should only be used for Active Directory, defaulting to original value");
+} else {
+log.debug("::This is Active Directory, check to see if it is in the ADMIN or DISABLED OU");
+String nativeId = link.getNativeIdentity().toLowerCase();
+log.debug("::distinguishedName: " + nativeId);
+IdentityService is = new IdentityService(context);
+
+// Here's the start of the code that goes through all of the links
+List appLinks = is.getLinks(identity, link.getApplication());
+Link disabledLink = null;
+Link adminLink = null;
+Link normalLink = null;
+log.debug("Starting For Loop");
+for (Object obj : appLinks) {
+Link appLink = (Link) obj;
+String appLinkNativeId = appLink.getNativeIdentity().toLowerCase();
+log.debug("Reviewing Account: " + appLinkNativeId);
+if (appLinkNativeId.toLowerCase().contains(ADMIN_OU)) {
+adminLink = appLink;
+log.debug("Admin Account");
+} else if (appLinkNativeId.toLowerCase().contains(DISABLED_OU)) {
+disabledLink = appLink;
+log.debug("Disabled Account");
+} else {
+normalLink = appLink;
+log.debug("Normal Account");
+}
+}
+log.debug("Done For Loop");
+if (normalLink != null) {
+returnValue = processLink(normalLink);
+} else if (disabledLink != null) {
+returnValue = processLink(disabledLink);
+}
+}
+
+return returnValue;</Source>
+</Rule>
+
+;

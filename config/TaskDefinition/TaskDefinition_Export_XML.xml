@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE TaskDefinition PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<TaskDefinition name="Export XML" resultAction="Delete" subType="task_item_type_generic" type="Generic">
+  <Attributes>
+    <Map>
+      <entry key="TaskSchedule.host"/>
+      <entry key="addCData" value="true"/>
+      <entry key="basePath" value="/Users/regan/Desktop/Export/05.23.2022"/>
+      <entry key="classNames" value="default"/>
+      <entry key="namingFormat" value="$Class$_$Name$"/>
+      <entry key="pluginName" value="ObjectExporter"/>
+      <entry key="removeIDs" value="true"/>
+      <entry key="stripMetadata" value="false"/>
+      <entry key="taskCompletionEmailNotify" value="Disabled"/>
+      <entry key="taskCompletionEmailRecipients"/>
+      <entry key="taskCompletionEmailTemplate"/>
+    </Map>
+  </Attributes>
+  <Description>Export XML of IdentityIQ objects.</Description>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </Owner>
+  <Parent>
+    <Reference class="sailpoint.object.TaskDefinition" name="XML Object Exporter"/>
+  </Parent>
+</TaskDefinition>

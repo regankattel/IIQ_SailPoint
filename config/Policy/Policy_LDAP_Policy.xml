@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Policy PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Policy certificationActions="Remediated,Mitigated,Delegated" configPage="entitlementPolicy.xhtml" executor="sailpoint.policy.EntitlementSODPolicyExecutor" name="LDAP Policy" state="Inactive" type="EntitlementSOD" typeKey="policy_type_entitlement_sod" violationOwnerType="Identity">
+  <PolicyAlert disabled="true" escalationStyle="none"/>
+  <Attributes>
+    <Map>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <Owner>
+    <Reference class="sailpoint.object.Identity" name="Aaron"/>
+  </Owner>
+  <ViolationOwner>
+    <Reference class="sailpoint.object.Identity" name="mukesh"/>
+  </ViolationOwner>
+  <GenericConstraints>
+    <GenericConstraint name="new rule" violationOwnerType="None">
+      <Description>Please request one entitlement at the time</Description>
+      <IdentitySelector>
+        <MatchExpression>
+          <MatchTerm name="groups" type="Entitlement" value="cn=cyberark,ou=groups,ou=LDAP,ou=system">
+            <ApplicationRef>
+              <Reference class="sailpoint.object.Application" name="LDAP Application"/>
+            </ApplicationRef>
+          </MatchTerm>
+        </MatchExpression>
+      </IdentitySelector>
+      <IdentitySelector>
+        <MatchExpression>
+          <MatchTerm name="groups" type="Entitlement" value="cn=okta,ou=groups,ou=LDAP,ou=system">
+            <ApplicationRef>
+              <Reference class="sailpoint.object.Application" name="LDAP Application"/>
+            </ApplicationRef>
+          </MatchTerm>
+        </MatchExpression>
+      </IdentitySelector>
+    </GenericConstraint>
+  </GenericConstraints>
+</Policy>

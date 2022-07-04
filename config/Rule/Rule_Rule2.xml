@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Rule2">
+  <Description>making rule 1</Description>
+  <Source><![CDATA[
+  
+ import sailpoint.api.SailPointContext;
+  import sailpoint.object.Identity;
+
+Identity identity = context.getObjectById(Identity.class, "c0a801e27de3108c817de3dbe4190159");
+	return identity.getLastname();
+  
+  ]]></Source>
+</Rule>

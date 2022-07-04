@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Policy PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Policy certificationActions="Remediated,Mitigated,Delegated" configPage="sodpolicy.xhtml" executor="sailpoint.policy.SODPolicyExecutor" name="LDAP Role Policy violation checker for okta and sailpoint" state="Inactive" type="SOD" typeKey="policy_type_sod" violationOwnerType="Identity">
+  <PolicyAlert disabled="true" escalationStyle="none"/>
+  <Attributes>
+    <Map>
+      <entry key="sysDescriptions">
+        <value>
+          <Map>
+            <entry key="en_US"/>
+          </Map>
+        </value>
+      </entry>
+    </Map>
+  </Attributes>
+  <ViolationOwner>
+    <Reference class="sailpoint.object.Identity" name="spadmin"/>
+  </ViolationOwner>
+  <SODConstraints>
+    <SODConstraint name="Okta and sailpoint Role policy violation checker for access requests" violationOwnerType="Manager">
+      <Attributes>
+        <Map>
+          <entry key="taskResultId" value="c0a8fe27806c11c481807700ff1307b2"/>
+        </Map>
+      </Attributes>
+      <LeftBundles>
+        <Reference class="sailpoint.object.Bundle" name="Ldap okta business role"/>
+      </LeftBundles>
+      <RightBundles>
+        <Reference class="sailpoint.object.Bundle" name="LDAP Business Sailpoint Role"/>
+      </RightBundles>
+    </SODConstraint>
+  </SODConstraints>
+</Policy>
