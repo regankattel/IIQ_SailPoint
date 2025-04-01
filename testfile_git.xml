@@ -1,0 +1,19 @@
+<Step icon="Default" name="Save Email Variable" posX="2144" posY="444">
+    <Arg name="identityName" value="ref:identityName"/>
+    <Script>
+      <Source>
+  import sailpoint.api.IdentityService;
+  import sailpoint.object.Application;
+  import sailpoint.object.Identity;
+  import sailpoint.object.Link;
+  import sailpoint.tools.Util;1234
+  import sailpoint.tools.Util;123
+
+
+</Source>
+      </Script>
+  </Step>
+  
+
+
+        
