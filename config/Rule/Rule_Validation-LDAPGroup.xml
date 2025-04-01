@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule language="beanshell" name="Validation-LDAPGroup" type="Validation">
+  <Source><![CDATA[
+
+
+import java.util.ArrayList;
+import sailpoint.object.Application;
+import sailpoint.tools.Message;
+import sailpoint.object.QueryOptions;
+import sailpoint.object.Filter;
+import sailpoint.object.ManagedAttribute;
+import java.util.Iterator;
+
+
+System.out.println("Starting to check for LDAP group: " + value); 
+
+List messages = new ArrayList();
+
+QueryOptions qo = new QueryOptions(); 
+
+qo.addFilter(Filter.and(Filter.eq("displayName",value),Filter.eq("application.name", "LDAP"))); 
+
+
+Iterator iter  = context.search(ManagedAttribute.class,qo);
+
+if (iter.hasNext())  {
+       System.out.println("We have a result, so it's taken: " + value); 
+       Message msg = new Message();
+       msg.setKey("LDAP Group: " + value + " already exists. Try another name...");
+       messages.add(msg);
+
+} else {
+       System.out.println("We don't have a result, so it's available." + value); 
+}
+
+return messages;
+
+ ]]></Source>
+</Rule>
